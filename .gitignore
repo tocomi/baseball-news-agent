@@ -8,3 +8,6 @@ dist
 *.db-*
 .netlify
 .vercel
+.env.local
+*.log
+.DS_Store
