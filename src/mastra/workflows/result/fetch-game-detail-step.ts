@@ -1,7 +1,8 @@
 import { createStep } from '@mastra/core/workflows'
 import { load } from 'cheerio'
 
-import { FETCH_HEADERS, gameDetailSchema, gameSummarySchema, homeRunSchema } from './schemas'
+import { FETCH_HEADERS, gameSummarySchema } from '../shared/schemas'
+import { gameDetailSchema, homeRunSchema } from './schemas'
 import { z } from 'zod'
 
 export const fetchGameDetailStep = createStep({

@@ -1,7 +1,7 @@
 import { createStep } from '@mastra/core/workflows'
 import { load } from 'cheerio'
 
-import { BASE_URL, FETCH_HEADERS, gameSummarySchema } from '../baseball/schemas'
+import { BASE_URL, FETCH_HEADERS, gameSummarySchema } from '../shared/schemas'
 import { gamePreviewSchema, starterSchema } from './schemas'
 import { z } from 'zod'
 

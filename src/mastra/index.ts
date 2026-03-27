@@ -8,7 +8,7 @@ import {
   SensitiveDataFilter,
 } from '@mastra/observability'
 import { weatherWorkflow } from './workflows/weather-workflow'
-import { baseballWorkflow } from './workflows/baseball-workflow'
+import { resultWorkflow } from './workflows/result-workflow'
 import { previewWorkflow } from './workflows/preview-workflow'
 import { weatherAgent } from './agents/weather-agent'
 import {
@@ -18,7 +18,7 @@ import {
 } from './scorers/weather-scorer'
 
 export const mastra = new Mastra({
-  workflows: { weatherWorkflow, baseballWorkflow, previewWorkflow },
+  workflows: { weatherWorkflow, resultWorkflow, previewWorkflow },
   agents: { weatherAgent },
   scorers: { toolCallAppropriatenessScorer, completenessScorer, translationScorer },
   storage: new LibSQLStore({

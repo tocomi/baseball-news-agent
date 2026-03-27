@@ -2,7 +2,7 @@ import { createStep } from '@mastra/core/workflows'
 import { load } from 'cheerio'
 import { z } from 'zod'
 
-import { BASE_URL, FETCH_HEADERS, SCHEDULE_URL, gameSummarySchema } from './schemas'
+import { BASE_URL, FETCH_HEADERS, SCHEDULE_URL, gameSummarySchema } from '../shared/schemas'
 
 export const fetchScheduleStep = createStep({
   id: 'fetch-schedule',
