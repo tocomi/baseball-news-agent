@@ -17,5 +17,6 @@ export const gameDetailSchema = z.object({
   savePitcher: z.string().nullable(),
   homeRuns: z.array(homeRunSchema),
   review: z.string().nullable(),
+  venue: z.string().nullable(),
   gameUrl: z.string(),
 })

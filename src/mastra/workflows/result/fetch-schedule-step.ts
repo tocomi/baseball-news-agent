@@ -6,16 +6,17 @@ import { BASE_URL, FETCH_HEADERS, SCHEDULE_URL, gameSummarySchema } from '../sha
 
 export const fetchScheduleStep = createStep({
   id: 'fetch-schedule',
-  description: 'Yahoo Baseballから本日の1軍試合URLリストを取得（試合終了・試合中）',
-  inputSchema: z.object({}),
+  description: 'Yahoo Baseballから指定日の1軍試合URLリストを取得（試合終了・試合中）',
+  inputSchema: z.object({ date: z.string().optional() }),
   outputSchema: z.object({
     games: z.array(gameSummarySchema),
+    dateStr: z.string(),
   }),
-  execute: async () => {
-    const today = new Date()
-    const month = today.getMonth() + 1
-    const day = today.getDate()
-    const yyyy = today.getFullYear()
+  execute: async ({ inputData }) => {
+    const target = inputData.date ? new Date(inputData.date) : new Date()
+    const month = target.getMonth() + 1
+    const day = target.getDate()
+    const yyyy = target.getFullYear()
     const mm = String(month).padStart(2, '0')
     const dd = String(day).padStart(2, '0')
 
@@ -29,7 +30,7 @@ export const fetchScheduleStep = createStep({
     const html = await res.text()
     const $ = load(html)
 
-    // 本日の日付文字列（例: "3月27日"）でtbodyを絞り込む
+    // 対象日の日付文字列（例: "3月27日"）でtbodyを絞り込む
     const todayPattern = `${month}月${day}日`
     const games: z.infer<typeof gameSummarySchema>[] = []
 
@@ -52,6 +53,6 @@ export const fetchScheduleStep = createStep({
         })
     })
 
-    return { games }
+    return { games, dateStr: `${month}月${day}日` }
   },
 })

@@ -37,17 +37,21 @@ function slackLink(url: string, text: string): string {
 function formatGame(game: z.infer<typeof gameDetailSchema>): string {
   const scoreText = `${game.firstTeam} ${game.firstTeamScore} - ${game.secondTeamScore} ${game.secondTeam}`
   const gameLink = slackLink(game.gameUrl, scoreText)
-  const lines: string[] = [`⚾ *${gameLink}*`]
+  const venuePart = game.venue ? ` 🏟️${game.venue}` : ''
+  const lines: string[] = [`⚾ *${gameLink}*${venuePart}`]
 
-  if (game.winningPitcher) lines.push(`✅ 勝: ${game.winningPitcher}`)
-  if (game.losingPitcher) lines.push(`❌ 敗: ${game.losingPitcher}`)
-  if (game.savePitcher) lines.push(`🛡️ S: ${game.savePitcher}`)
+  const pitcherParts = [
+    game.winningPitcher ? `✅ 勝: ${game.winningPitcher}` : null,
+    game.losingPitcher ? `❌ 敗: ${game.losingPitcher}` : null,
+    game.savePitcher ? `🛡️ S: ${game.savePitcher}` : null,
+  ].filter(Boolean)
+  if (pitcherParts.length > 0) lines.push('', pitcherParts.join(' / '))
 
   if (game.homeRuns.length > 0) {
     const hrText = game.homeRuns
-      .map((hr) => `${hr.team} ${hr.player} ${hr.detail}`.trim())
+      .map((hr) => `${hr.team} ${hr.player} ${hr.detail.replace(/\(.*\)/, '').trim()}`.trim())
       .join(', ')
-    lines.push(`💣 本塁打: ${hrText}`)
+    lines.push('', `💣 本塁打: ${hrText}`)
   }
 
   if (game.review) {
@@ -60,7 +64,10 @@ function formatGame(game: z.infer<typeof gameDetailSchema>): string {
 export const postToSlackStep = createStep({
   id: 'post-to-slack',
   description: '試合結果をSlackのチャンネル本文とスレッドに投稿',
-  inputSchema: z.array(gameDetailSchema.nullable()),
+  inputSchema: z.object({
+    games: z.array(gameDetailSchema.nullable()),
+    dateStr: z.string().optional(),
+  }),
   outputSchema: z.object({ message: z.string() }),
   execute: async ({ inputData }) => {
     const token = process.env.SLACK_BOT_TOKEN
@@ -70,14 +77,13 @@ export const postToSlackStep = createStep({
     }
 
     // null（未開始試合）を除外
-    const games = inputData.filter((g): g is z.infer<typeof gameDetailSchema> => g !== null)
+    const games = inputData.games.filter((g): g is z.infer<typeof gameDetailSchema> => g !== null)
 
     const today = new Date()
-    const dateStr = `${today.getMonth() + 1}月${today.getDate()}日`
+    const dateStr = inputData.dateStr ?? `${today.getMonth() + 1}月${today.getDate()}日`
 
     if (games.length === 0) {
-      await postSlackMessage(token, { channel, text: `⚾ ${dateStr} 本日は試合はありません` })
-      return { message: '試合なし通知を投稿しました' }
+      return { message: '試合なし（投稿スキップ）' }
     }
 
     // メインメッセージを投稿してスレッドtsを取得

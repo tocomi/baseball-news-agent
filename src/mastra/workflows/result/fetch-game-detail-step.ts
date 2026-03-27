@@ -44,12 +44,10 @@ export const fetchGameDetailStep = createStep({
     $('#async-resultPitcher .bb-gameTable tbody tr').each((_, row) => {
       const label = $(row).find('th').text().trim()
       const player = $(row).find('.bb-gameTable__player').first().text().trim()
-      const team = $(row).find('.bb-gameTable__team').first().text().trim()
       if (!player) return
-      const name = team ? `${team} ${player}` : player
-      if (label === '勝利投手') winningPitcher = name
-      else if (label === '敗戦投手') losingPitcher = name
-      else if (label === 'セーブ') savePitcher = name
+      if (label === '勝利投手') winningPitcher = player
+      else if (label === '敗戦投手') losingPitcher = player
+      else if (label === 'セーブ') savePitcher = player
     })
 
     // 本塁打
@@ -78,6 +76,14 @@ export const fetchGameDetailStep = createStep({
     // 戦評
     const review = $('#async-recap .bb-paragraph').first().text().trim() || null
 
+    // 球場
+    const descText = $('.bb-gameDescription__left').text().replace(/\s+/g, ' ').trim()
+    const venue =
+      descText
+        .replace(/\d+月\d+日（.）/, '')
+        .replace(/\d+:\d+/, '')
+        .trim() || null
+
     return {
       gameId: inputData.gameId,
       firstTeam,
@@ -89,6 +95,7 @@ export const fetchGameDetailStep = createStep({
       savePitcher,
       homeRuns,
       review,
+      venue,
       gameUrl: inputData.gameUrl,
     }
   },
