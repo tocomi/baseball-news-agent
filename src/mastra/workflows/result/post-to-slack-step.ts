@@ -30,24 +30,28 @@ async function postSlackMessage(
   return (await res.json()) as SlackPostResponse
 }
 
-function formatGame(game: z.infer<typeof gameDetailSchema>): string {
-  const lines: string[] = [
-    `*${game.firstTeam} ${game.firstTeamScore} - ${game.secondTeamScore} ${game.secondTeam}*`,
-  ]
+function slackLink(url: string, text: string): string {
+  return `<${url}|${text}>`
+}
 
-  if (game.winningPitcher) lines.push(`勝: ${game.winningPitcher}`)
-  if (game.losingPitcher) lines.push(`敗: ${game.losingPitcher}`)
-  if (game.savePitcher) lines.push(`S: ${game.savePitcher}`)
+function formatGame(game: z.infer<typeof gameDetailSchema>): string {
+  const scoreText = `${game.firstTeam} ${game.firstTeamScore} - ${game.secondTeamScore} ${game.secondTeam}`
+  const gameLink = slackLink(game.gameUrl, scoreText)
+  const lines: string[] = [`⚾ *${gameLink}*`]
+
+  if (game.winningPitcher) lines.push(`✅ 勝: ${game.winningPitcher}`)
+  if (game.losingPitcher) lines.push(`❌ 敗: ${game.losingPitcher}`)
+  if (game.savePitcher) lines.push(`🛡️ S: ${game.savePitcher}`)
 
   if (game.homeRuns.length > 0) {
     const hrText = game.homeRuns
       .map((hr) => `${hr.team} ${hr.player} ${hr.detail}`.trim())
       .join(', ')
-    lines.push(`本塁打: ${hrText}`)
+    lines.push(`💣 本塁打: ${hrText}`)
   }
 
   if (game.review) {
-    lines.push('', game.review)
+    lines.push('', `📝 ${game.review}`)
   }
 
   return lines.join('\n')
