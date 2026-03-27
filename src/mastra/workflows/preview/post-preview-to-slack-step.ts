@@ -71,17 +71,14 @@ export const postPreviewToSlackStep = createStep({
     // null（見どころ未掲載試合）を除外
     const games = inputData.filter((g): g is z.infer<typeof gamePreviewSchema> => g !== null)
 
-    const today = new Date()
-    const dateStr = `${today.getMonth() + 1}月${today.getDate()}日`
-
     if (games.length === 0) {
-      await postSlackMessage(token, { channel, text: `⚾ ${dateStr} 本日の試合予定はありません` })
+      await postSlackMessage(token, { channel, text: `⚾ 本日の試合予定はありません` })
       return { message: '試合予定なし通知を投稿しました' }
     }
 
     const mainRes = await postSlackMessage(token, {
       channel,
-      text: `⚾ ${dateStr} 本日のプロ野球の試合予定です（${games.length}試合）`,
+      text: `⚾ *本日の試合予定をお伝えします！*`,
     })
     if (!mainRes.ok) {
       throw new Error(`Slackメインメッセージ投稿失敗: ${mainRes.error ?? 'unknown'}`)

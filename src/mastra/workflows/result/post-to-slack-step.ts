@@ -79,9 +79,6 @@ export const postToSlackStep = createStep({
     // null（未開始試合）を除外
     const games = inputData.games.filter((g): g is z.infer<typeof gameDetailSchema> => g !== null)
 
-    const today = new Date()
-    const dateStr = inputData.dateStr ?? `${today.getMonth() + 1}月${today.getDate()}日`
-
     if (games.length === 0) {
       return { message: '試合なし（投稿スキップ）' }
     }
@@ -89,7 +86,7 @@ export const postToSlackStep = createStep({
     // メインメッセージを投稿してスレッドtsを取得
     const mainRes = await postSlackMessage(token, {
       channel,
-      text: `⚾ ${dateStr} プロ野球速報です（${games.length}試合）`,
+      text: `⚾ *本日の試合結果をお伝えします！*`,
     })
     if (!mainRes.ok) {
       throw new Error(`Slackメインメッセージ投稿失敗: ${mainRes.error ?? 'unknown'}`)
