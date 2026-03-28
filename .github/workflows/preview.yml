@@ -1,0 +1,56 @@
+name: Preview Workflow
+
+on:
+  schedule:
+    # 9:30 JST
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Start Mastra server
+        run: node .mastra/output/index.mjs &
+
+      - name: Wait for server to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4111/api/workflows > /dev/null 2>&1; then
+              echo "Server is ready"
+              exit 0
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 2
+          done
+          echo "Server did not start in time"
+          exit 1
+
+      - name: Run preview-workflow
+        run: |
+          result=$(curl -sf -X POST \
+            http://localhost:4111/api/workflows/preview-workflow/start-async \
+            -H 'Content-Type: application/json' \
+            -d '{"inputData": {}}')
+          echo "$result"
