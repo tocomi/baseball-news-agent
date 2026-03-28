@@ -1,6 +1,7 @@
 import { createStep } from '@mastra/core/workflows'
 import { z } from 'zod'
 
+import { formatDateLabel } from '../../utils/date'
 import { gameDetailSchema } from './schemas'
 
 interface SlackPostParams {
@@ -83,10 +84,12 @@ export const postToSlackStep = createStep({
       return { message: '試合なし（投稿スキップ）' }
     }
 
+    const dateLabel = formatDateLabel(new Date())
+
     // メインメッセージを投稿してスレッドtsを取得
     const mainRes = await postSlackMessage(token, {
       channel,
-      text: `⚾ *本日の試合結果をお伝えします！*`,
+      text: `⚾ *本日 ${dateLabel} の試合結果をお伝えします！*`,
     })
     if (!mainRes.ok) {
       throw new Error(`Slackメインメッセージ投稿失敗: ${mainRes.error ?? 'unknown'}`)
