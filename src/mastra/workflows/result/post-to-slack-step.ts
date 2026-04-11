@@ -55,6 +55,10 @@ function formatGame(game: z.infer<typeof gameDetailSchema>): string {
     lines.push('', `💣 本塁打: ${hrText}`)
   }
 
+  if (game.inning) {
+    lines.push('', `🔴 試合中 ${game.inning}`)
+  }
+
   if (game.review) {
     lines.push('', `📝 ${game.review}`)
   }
