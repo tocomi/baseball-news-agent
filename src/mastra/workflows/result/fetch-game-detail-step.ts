@@ -11,19 +11,26 @@ export const fetchGameDetailStep = createStep({
   inputSchema: gameSummarySchema,
   outputSchema: gameDetailSchema.nullable(),
   execute: async ({ inputData }) => {
-    const res = await fetch(inputData.gameUrl, { headers: FETCH_HEADERS })
+    // /index は試合終了→/top、試合中→/score にリダイレクトされるため /top を直接使う
+    // /top は試合中・試合終了どちらも同じセレクターで取得可能
+    const topUrl = inputData.gameUrl.replace(/\/index$/, '/top')
+    const res = await fetch(topUrl, { headers: FETCH_HEADERS })
     if (!res.ok) {
-      throw new Error(`試合詳細取得失敗: ${res.status} (${inputData.gameUrl})`)
+      throw new Error(`試合詳細取得失敗: ${res.status} (${topUrl})`)
     }
 
     const html = await res.text()
     const $ = load(html)
 
-    // 試合開始前（未開始）は除外
-    const state = $('.bb-gameCard__state span').first().text().trim()
-    if (state !== '試合終了' && state !== '試合中') {
+    // 試合中止は除外
+    // 試合終了: .bb-gameCard__state span → "試合終了"
+    // 試合中:   .bb-gameCard__state a   → "4回裏" などイニング文字列
+    const stateSpan = $('.bb-gameCard__state span').first().text().trim()
+    const stateLink = $('.bb-gameCard__state a').first().text().trim()
+    if (stateSpan === '試合中止') {
       return null
     }
+    const inning = /^\d+回(表|裏)$/.test(stateLink) ? stateLink : null
 
     // チーム名
     const teamNames = $('.bb-gameTeam__name')
@@ -90,6 +97,7 @@ export const fetchGameDetailStep = createStep({
       secondTeam,
       firstTeamScore,
       secondTeamScore,
+      inning,
       winningPitcher,
       losingPitcher,
       savePitcher,

@@ -12,6 +12,8 @@ export const gameDetailSchema = z.object({
   secondTeam: z.string(), // Yahoo表示上の2番目チーム（ビジター）
   firstTeamScore: z.number(),
   secondTeamScore: z.number(),
+  /** 試合中のみ "4回裏" など。試合終了は null */
+  inning: z.string().nullable(),
   winningPitcher: z.string().nullable(),
   losingPitcher: z.string().nullable(),
   savePitcher: z.string().nullable(),

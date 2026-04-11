@@ -42,7 +42,8 @@ export const fetchScheduleStep = createStep({
         .find('.bb-scheduleTable__status a')
         .each((_, statusEl) => {
           const statusText = $(statusEl).text().trim()
-          if (statusText !== '試合終了' && statusText !== '試合中') return
+          // 試合終了 or イニング表示（例: "4回表" "9回裏"）＝試合中
+          if (statusText !== '試合終了' && !/^\d+回(表|裏)$/.test(statusText)) return
           const href = $(statusEl).attr('href') ?? ''
           const m = href.match(/\/npb\/game\/(\d+)\//)
           if (!m) return
