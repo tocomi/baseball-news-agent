@@ -69,18 +69,14 @@ export const postPreviewToSlackStep = createStep({
       throw new Error('SLACK_BOT_TOKEN または SLACK_CHANNEL_ID が未設定です')
     }
 
-    const dateLabel = formatDateLabel(new Date())
-
     // null（見どころ未掲載試合）を除外
     const games = inputData.filter((g): g is z.infer<typeof gamePreviewSchema> => g !== null)
 
     if (games.length === 0) {
-      await postSlackMessage(token, {
-        channel,
-        text: `⚾ 本日 ${dateLabel} の試合予定はありません`,
-      })
-      return { message: '試合予定なし通知を投稿しました' }
+      return { message: '試合予定なし（投稿スキップ）' }
     }
+
+    const dateLabel = formatDateLabel(new Date())
 
     const mainRes = await postSlackMessage(token, {
       channel,
